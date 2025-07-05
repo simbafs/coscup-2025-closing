@@ -1,0 +1,45 @@
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+
+	font-family: 'Noto Sans TC', sans-serif;
+	font-optical-sizing: auto;
+	font-weight: 500;
+	font-style: normal;
+}
+
+#screen {
+	height: 100vh;
+	width: 100vw;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	justify-content: end;
+}
+
+.slide {
+	padding: 20px;
+	height: 300px;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	gap: 20px;
+}
+
+.members {
+	display: flex;
+	gap: 20px;
+}
+
+.member {
+	& > img {
+		border-radius: 50%;
+	}
+
+	& > h2,
+	h3 {
+		text-align: center;
+	}
+}
