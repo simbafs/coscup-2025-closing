@@ -1,5 +1,6 @@
 'use strict'
 import { createTimeline } from 'https://cdn.jsdelivr.net/npm/animejs/+esm'
+import data from './data.json'
 
 // type definitions
 
@@ -254,10 +255,6 @@ function getCurrentLabel(tl) {
 }
 
 async function main() {
-	const data = await fetch('./data.json')
-		.then(res => res.json())
-		.catch(err => console.error(err))
-
 	const tl = createTimeline({
 		loop: true,
 	})
