@@ -39,6 +39,7 @@ jobs:
       #   with:
       #     node-version: lts/*
       #     cache: 'npm'
+      - run: ls -lh
       - name: Install dependencies
         run: pnpm install
       - name: Build
