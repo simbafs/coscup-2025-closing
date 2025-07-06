@@ -9,13 +9,10 @@
 	font-style: normal;
 }
 
-#container {
+body {
 	height: 100vh;
 	width: 100vw;
 	overflow: hidden;
-	/* display: flex; */
-	/* flex-direction: column; */
-	/* justify-content: end; */
 	padding: 20px;
 	gap: 20px;
 }
