@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      animejs:
+        specifier: ^4.0.2
+        version: 4.0.2
     devDependencies:
       typescript:
         specifier: ~5.8.3
@@ -270,6 +274,9 @@ packages:
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
 
+  animejs@4.0.2:
+    resolution: {integrity: sha512-f0L/kSya2RF23iMSF/VO01pMmLwlAFoiQeNAvBXhEyLzIPd2/QTBRatwGUqkVCC6seaAJYzAkGir55N4SL+h3A==}
+
   esbuild@0.25.5:
     resolution: {integrity: sha512-P8OtKZRv/5J5hhz0cUAdu/cLuPIKXpQl1R9pZtvmHWQvrAUVd0UNIPT4IB4W3rNOqVO0rlqHmCIbSwxh/c9yUQ==}
     engines: {node: '>=18'}
@@ -500,6 +507,8 @@ snapshots:
     optional: true
 
   '@types/estree@1.0.8': {}
+
+  animejs@4.0.2: {}
 
   esbuild@0.25.5:
     optionalDependencies:
