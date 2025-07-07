@@ -1,5 +1,8 @@
 import { createTimeline, Timeline } from 'animejs'
 import data from './data.json'
+import _sponsorData from './sponsor.json'
+
+const sponsorData: Partial<Record<string, Sponsor[]>> = _sponsorData
 
 // type definitions
 
@@ -18,6 +21,45 @@ type Group = {
 type MemberWithChief = {
 	member: Member
 	isChief: boolean
+}
+
+type Sponsor = {
+	id: string
+	name: string
+	image: string
+}
+
+type Label = {
+	name: string
+	value: string
+}
+
+// copy from https://github.com/COSCUP/2025/blob/8bfa7b34990a5b9b62490dac1a5533a711a6f70f/loaders/sponsor.data.ts#L41C1-L52C2
+
+const sponsorLevels = [
+	'titanium',
+	'gold',
+	'silver',
+	'bronze',
+	'friend',
+	'over-seas',
+	'co-promotion-partner',
+	'co-host',
+	'co-organizer',
+	'special-thanks',
+]
+
+const sponsorLevels_mapping: Record<string, string> = {
+	titanium: '鈦金級贊助',
+	gold: '黃金級贊助',
+	silver: '白銀級贊助',
+	bronze: '青銅級贊助',
+	friend: '好朋友級贊助',
+	'over-seas': '海外講者旅遊補助',
+	'co-promotion-partner': '共同推廣夥伴',
+	'co-host': '共同主辦單位',
+	'co-organizer': '協辦單位',
+	'special-thanks': '特別感謝',
 }
 
 // utility functions
@@ -104,7 +146,7 @@ function Group(group: Group, n: number) {
 
 	const members = chunkedMembers.map(c => {
 		const m = document.createElement('div')
-		m.classList.add('members')
+		m.classList.add('slide')
 		c.forEach(({ member, isChief }) => {
 			m.appendChild(Member(member, isChief))
 		})
@@ -158,7 +200,7 @@ function appendSlides(tl: Timeline, label: string, title: HTMLElement, slides: H
 	tl.add(title, slideout, '<<')
 }
 
-function slideInGroup(tl: Timeline, group: Group) {
+function membeerSlides(tl: Timeline, group: Group) {
 	const n = getNumberInGroup()
 	const { title, members } = Group(group, n)
 
@@ -170,7 +212,45 @@ function slideInGroup(tl: Timeline, group: Group) {
 	appendSlides(tl, group.tid, title, members)
 }
 
-function controlPanel(tl: Timeline, groups: Group[]) {
+function sponsorSlides(tl: Timeline, level: string, sponsors: Sponsor[]) {
+	if (sponsors.length === 0) {
+		return
+	}
+	const n = getNumberInGroup()
+	const title = document.createElement('h1')
+	title.textContent = sponsorLevels_mapping[level] || level
+
+	const slides = chunk(sponsors, n).map(s => {
+		const slide = document.createElement('div')
+		slide.classList.add('slide')
+
+		s.forEach(sponsor => {
+			const sDiv = document.createElement('div')
+			sDiv.classList.add('sponsor')
+
+			const img = document.createElement('img')
+			img.src = sponsor.image
+			img.alt = sponsor.name
+
+			const name = document.createElement('h2')
+			name.textContent = sponsor.name
+
+			sDiv.appendChild(img)
+			sDiv.appendChild(name)
+
+			slide.appendChild(sDiv)
+		})
+
+		membersContainer.appendChild(slide)
+		return slide
+	})
+
+	titleContainer.appendChild(title)
+
+	appendSlides(tl, level, title, slides)
+}
+
+function controlPanel(tl: Timeline, labels: Label[]) {
 	const pause = () => {
 		if (tl.paused) {
 			tl.play()
@@ -196,10 +276,10 @@ function controlPanel(tl: Timeline, groups: Group[]) {
 	})
 
 	const label: HTMLSelectElement = document.querySelector('#label')!
-	groups.forEach(g => {
+	labels.forEach(l => {
 		const option = document.createElement('option')
-		option.value = g.tid
-		option.textContent = g.name
+		option.value = l.value
+		option.textContent = l.name
 		label.appendChild(option)
 	})
 
@@ -245,10 +325,25 @@ async function main() {
 	})
 
 	for (const group of data.data) {
-		slideInGroup(tl, group)
+		membeerSlides(tl, group)
 	}
 
-	controlPanel(tl, data.data)
+	for (const level of sponsorLevels) {
+		sponsorSlides(tl, level, sponsorData[level] || [])
+	}
+
+	const labels = [
+		...data.data.map(g => ({
+			name: g.name,
+			value: g.tid,
+		})),
+		...Object.entries(sponsorLevels_mapping).map(([value, name]) => ({
+			name,
+			value,
+		})),
+	]
+
+	controlPanel(tl, labels)
 }
 
 main()

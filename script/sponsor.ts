@@ -76,14 +76,16 @@ async function main() {
 	const sponsors = await getSponsers(filename)
 	const images = await downloadImages(sponsors)
 
-	const result = sponsors.map(s => ({
+	const sponsorWithImage = sponsors.map(s => ({
 		id: s.id,
 		name: s['name:zh-TW'],
 		image: images[s.id],
 		level: s.level,
 	}))
 
-	const json = JSON.stringify(result)
+	const groupedSponsors = Object.groupBy(sponsorWithImage, s => s.level)
+
+	const json = JSON.stringify(groupedSponsors)
 
 	console.log(json)
 }
