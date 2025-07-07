@@ -1,4 +1,4 @@
-import { createTimeline, Timeline } from 'animejs'
+import { createTimeline, engine, Timeline } from 'animejs'
 import data from './data.json'
 import _sponsorData from './sponsor.json'
 
@@ -323,6 +323,8 @@ function getCurrentLabel(tl: Timeline) {
 }
 
 async function main() {
+	engine.pauseOnDocumentHidden = false
+
 	const tl = createTimeline({
 		loop: true,
 	})
