@@ -57,7 +57,7 @@ async function getSponsers(filename: string) {
 		columns: true,
 	})
 
-	return records
+	return records.filter(s => s.canPublish === 'Y')
 }
 
 async function downloadImages(sponsers: Sponsor[]): Promise<Record<string, string>> {
@@ -80,6 +80,7 @@ async function main() {
 		id: s.id,
 		name: s['name:zh-TW'],
 		image: images[s.id],
+		level: s.level,
 	}))
 
 	const json = JSON.stringify(result)
