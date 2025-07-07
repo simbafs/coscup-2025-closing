@@ -119,21 +119,13 @@ function Group(group: Group, n: number) {
 
 // others
 
-function slideInGroup(tl: Timeline, group: Group) {
-	const titleContainer = document.querySelector('#title')!
-	const membersContainer: HTMLDivElement = document.querySelector('#members')!
+const titleContainer = document.querySelector('#title')!
+const membersContainer: HTMLDivElement = document.querySelector('#members')!
 
-	const n = getNumberInGroup()
-	const { title, members } = Group(group, n)
-
-	titleContainer.appendChild(title)
-	members.forEach(m => {
-		membersContainer.appendChild(m)
-	})
-
+/** Append the given title and slides to timeline. Note that you need to append the element to DOM by your self */
+function appendSlides(tl: Timeline, label: string, title: HTMLElement, slides: HTMLElement[]) {
 	const speed = 600 / 1000 // px/ms
-
-	const width = membersContainer.offsetWidth + 200
+	const width = document.body.offsetWidth
 	const duration = width / speed
 
 	const slidein = {
@@ -155,10 +147,27 @@ function slideInGroup(tl: Timeline, group: Group) {
 		},
 	}
 
-	tl.label(group.tid)
+	title.style.transform = `translateX(${width}px)`
+	slides.forEach(s => (s.style.transform = `translateX(${width}px)`))
+
+	tl.label(label)
 	tl.add(title, slidein, '<<')
-	members.forEach(m => tl.add(m, slidein, '<<').add(m, slideout))
+	slides.forEach(s => {
+		tl.add(s, slidein, '<<').add(s, slideout)
+	})
 	tl.add(title, slideout, '<<')
+}
+
+function slideInGroup(tl: Timeline, group: Group) {
+	const n = getNumberInGroup()
+	const { title, members } = Group(group, n)
+
+	titleContainer.appendChild(title)
+	members.forEach(m => {
+		membersContainer.appendChild(m)
+	})
+
+	appendSlides(tl, group.tid, title, members)
 }
 
 function controlPanel(tl: Timeline, groups: Group[]) {
