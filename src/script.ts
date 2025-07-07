@@ -1,4 +1,4 @@
-import { createTimeline, Timeline, utils } from 'animejs'
+import { createTimeline, Timeline } from 'animejs'
 import data from './data.json'
 import _sponsorData from './sponsor.json'
 
