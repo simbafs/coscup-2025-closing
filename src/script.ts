@@ -1,4 +1,4 @@
-import { createTimeline, Timeline } from 'animejs'
+import { createTimeline, Timeline, utils } from 'animejs'
 import data from './data.json'
 import _sponsorData from './sponsor.json'
 
@@ -276,12 +276,15 @@ function controlPanel(tl: Timeline, labels: Label[]) {
 	})
 
 	const label: HTMLSelectElement = document.querySelector('#label')!
-	labels.forEach(l => {
-		const option = document.createElement('option')
-		option.value = l.value
-		option.textContent = l.name
-		label.appendChild(option)
-	})
+	console.log(tl.labels)
+	labels
+		.filter(l => l.value in tl.labels)
+		.forEach(l => {
+			const option = document.createElement('option')
+			option.value = l.value
+			option.textContent = l.name
+			label.appendChild(option)
+		})
 
 	label.addEventListener('change', e => {
 		const tid = (e.target as HTMLSelectElement).value
