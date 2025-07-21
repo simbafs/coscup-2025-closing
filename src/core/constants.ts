@@ -23,3 +23,9 @@ export const sponsorLevels_mapping: Record<string, string> = {
 	'co-organizer': '協辦單位',
 	'special-thanks': '特別感謝',
 }
+
+// Animation and Layout Constants
+export const PAGE_WIDTH_OFFSET = 500 // px, right-side padding for calculating number of items
+export const MEMBER_ELEMENT_WIDTH = 150 // px, width of a single member/sponsor element
+export const ANIMATION_SPEED = 0.6 // px/ms, speed of the slide animation
+export const SLIDE_DELAY = 1000 // ms, delay before a slide animates out

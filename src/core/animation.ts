@@ -1,4 +1,5 @@
 import { Timeline } from 'animejs'
+import { ANIMATION_SPEED, SLIDE_DELAY } from './constants'
 
 /**
  * Appends a set of title and content slides to the main timeline.
@@ -8,9 +9,8 @@ import { Timeline } from 'animejs'
  * @param slides An array of slide elements to animate.
  */
 export function appendSlides(tl: Timeline, label: string, title: HTMLElement, slides: HTMLElement[]) {
-	const speed = 600 / 1000 // px/ms
 	const width = document.body.offsetWidth
-	const duration = width / speed
+	const duration = width / ANIMATION_SPEED
 
 	const slidein = {
 		translateX: {
@@ -22,7 +22,7 @@ export function appendSlides(tl: Timeline, label: string, title: HTMLElement, sl
 	}
 
 	const slideout = {
-		delay: 1000,
+		delay: SLIDE_DELAY,
 		translateX: {
 			from: 0,
 			to: -width,

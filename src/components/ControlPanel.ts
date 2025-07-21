@@ -8,9 +8,14 @@ import { getCurrentLabel } from '../core/utils'
  * @param labels The array of labels for the dropdown.
  */
 export function setupControlPanel(tl: Timeline, labels: Label[]) {
-	const pauseButton = document.querySelector('#pause')!
-	const restartButton = document.querySelector('#restart')!
-	const labelSelect: HTMLSelectElement = document.querySelector('#label')!
+	const pauseButton = document.querySelector('#pause')
+	const restartButton = document.querySelector('#restart')
+	const labelSelect = document.querySelector('#label') as HTMLSelectElement | null
+
+	if (!pauseButton || !restartButton || !labelSelect) {
+		console.warn('Control panel elements not found. UI controls will be disabled.')
+		return
+	}
 
 	const pause = () => {
 		if (tl.paused) {

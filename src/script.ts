@@ -1,5 +1,5 @@
-import { createTimeline, engine, Timeline } from 'animejs'
-import type { Group, Label, Sponsor } from './types'
+import { createTimeline, engine } from 'animejs'
+import type { Label, Sponsor } from './types'
 import { sponsorLevels, sponsorLevels_mapping } from './core/constants'
 import { getNumberInGroup } from './core/utils'
 import { appendSlides } from './core/animation'
@@ -13,66 +13,48 @@ import _sponsorData from './sponsor.json'
 
 const sponsorData: Partial<Record<string, Sponsor[]>> = _sponsorData
 
-// DOM Containers
-const titleContainer = document.querySelector('#title')!
-const membersContainer: HTMLDivElement = document.querySelector('#members')!
-
-/**
- * Adds group slides to the timeline.
- */
-function addGroupSlides(tl: Timeline, group: Group) {
-	const membersPerSlide = getNumberInGroup()
-	const { title, slides } = createGroupSlides(group, membersPerSlide)
-
-	// Append elements to the DOM
-	titleContainer.appendChild(title)
-	slides.forEach(slide => membersContainer.appendChild(slide))
-
-	// Add animations to the timeline
-	appendSlides(tl, group.tid, title, slides)
-}
-
-/**
- * Adds sponsor slides to the timeline.
- */
-function addSponsorSlides(tl: Timeline, level: string, sponsors: Sponsor[]) {
-	const sponsorsPerSlide = getNumberInGroup()
-	const result = createSponsorSlides(level, sponsors, sponsorsPerSlide)
-
-	if (!result) {
-		return
-	}
-
-	const { title, slides } = result
-
-	// Append elements to the DOM
-	titleContainer.appendChild(title)
-	slides.forEach(slide => membersContainer.appendChild(slide))
-
-	// Add animations to the timeline
-	appendSlides(tl, level, title, slides)
-}
-
 /**
  * Main function to initialize the application.
  */
 async function main() {
+	// --- 1. Setup and Guards ---
 	engine.pauseOnDocumentHidden = false
+
+	const titleContainer = document.querySelector('#title')
+	const membersContainer = document.querySelector('#members')
+
+	if (!titleContainer || !membersContainer) {
+		console.error('Required DOM containers #title or #members not found. Aborting.')
+		return
+	}
 
 	const tl = createTimeline({
 		loop: true,
 	})
 
-	// Add all group and sponsor slides to the timeline
+	// --- 2. Slide Generation and DOM Population ---
+	const membersPerSlide = getNumberInGroup()
+
+	// Process and append group slides
 	for (const group of groupData.data) {
-		addGroupSlides(tl, group)
+		const { title, slides } = createGroupSlides(group, membersPerSlide)
+		titleContainer.appendChild(title)
+		slides.forEach(slide => membersContainer.appendChild(slide))
+		appendSlides(tl, group.tid, title, slides)
 	}
 
+	// Process and append sponsor slides
 	for (const level of sponsorLevels) {
-		addSponsorSlides(tl, level, sponsorData[level] || [])
+		const result = createSponsorSlides(level, sponsorData[level] || [], membersPerSlide)
+		if (result) {
+			const { title, slides } = result
+			titleContainer.appendChild(title)
+			slides.forEach(slide => membersContainer.appendChild(slide))
+			appendSlides(tl, level, title, slides)
+		}
 	}
 
-	// Prepare labels for the control panel
+	// --- 3. UI Controls ---
 	const labels: Label[] = [
 		...groupData.data.map(g => ({
 			name: g.name,
@@ -84,7 +66,6 @@ async function main() {
 		})),
 	]
 
-	// Setup UI controls
 	setupControlPanel(tl, labels)
 }
 
