@@ -13,33 +13,44 @@ export function appendSlides(tl: Timeline, label: string, title: HTMLElement, sl
 	const duration = width / ANIMATION_SPEED
 
 	const slidein = {
-		translateX: {
-			from: width,
-			to: 0,
-			duration: duration,
-			ease: 'linear',
-		},
+		translateX: [width, 0],
+		duration: duration,
+		ease: 'linear',
 	}
 
 	const slideout = {
+		translateX: [0, -width],
+		duration: duration,
+		ease: 'linear',
 		delay: SLIDE_DELAY,
-		translateX: {
-			from: 0,
-			to: -width,
-			duration: duration,
-			ease: 'linear',
-		},
+	}
+
+	const reset = {
+		translateX: width,
+		duration: 0,
+		delay: 0,
 	}
 
 	// Set initial position off-screen
 	title.style.transform = `translateX(${width}px)`
 	slides.forEach(s => (s.style.transform = `translateX(${width}px)`))
 
-	// Add animations to the timeline
 	tl.label(label)
-	tl.add(title, slidein, '<<')
+
+	// Use the simpler (but less type-strict) `add(target, params)` overload
+	// which the original code used and passed compilation.
+
+	// Title In
+	tl.add(title, slidein, `-=${duration}`)
+
+	// Slides In and Out
 	slides.forEach(s => {
-		tl.add(s, slidein, '<<').add(s, slideout)
+		tl.add(s, slidein, `-=${duration}`) // Align with title animation
+		tl.add(s, slideout)
+		tl.add(s, reset)
 	})
-	tl.add(title, slideout, '<<')
+
+	// Title Out
+	tl.add(title, slideout, `-=${duration + SLIDE_DELAY}`) // Align with last slide's out animation
+	tl.add(title, reset)
 }

@@ -1,6 +1,6 @@
 import { createTimeline, engine } from 'animejs'
 import type { Label, Sponsor } from './types'
-import { sponsorLevels, sponsorLevels_mapping } from './core/constants'
+import { sponsorLevels, sponsorLevels_mapping, ANIMATION_SPEED } from './core/constants'
 import { getNumberInGroup } from './core/utils'
 import { appendSlides } from './core/animation'
 import { createGroupSlides } from './components/Group'
@@ -30,6 +30,12 @@ async function main() {
 
 	const tl = createTimeline({
 		loop: true,
+	})
+
+	// Add an initial delay equal to one slide duration
+	const initialDelay = document.body.offsetWidth / ANIMATION_SPEED
+	tl.add({
+		duration: initialDelay,
 	})
 
 	// --- 2. Slide Generation and DOM Population ---
