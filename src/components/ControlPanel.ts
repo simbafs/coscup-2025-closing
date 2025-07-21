@@ -60,12 +60,33 @@ export function setupControlPanel(tl: Timeline, labels: Label[]) {
 		}
 	})
 
+	let onLabelChange: (label: string) => void
+
 	// Update dropdown based on timeline progress
 	const getCurrent = getCurrentLabel(tl)
 	tl.onUpdate = () => {
 		const currentLabel = getCurrent(tl.iterationCurrentTime)
 		if (currentLabel !== labelSelect.value) {
 			labelSelect.value = currentLabel
+			console.log(onLabelChange)
+			if (onLabelChange) {
+				onLabelChange(currentLabel)
+			}
 		}
+	}
+
+	return {
+		pause,
+		restart,
+		jump: ({ value = '' } = {}) => {
+			if (value in tl.labels) {
+				tl.seek(tl.labels[value])
+			} else {
+				console.warn(`Label "${value}" not found in timeline.`)
+			}
+		},
+		onLabelChange: (callback: (label: string) => void) => {
+			onLabelChange = callback
+		},
 	}
 }

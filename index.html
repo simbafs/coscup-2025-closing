@@ -13,9 +13,12 @@
 		<link href="/src/style.css" rel="stylesheet" />
 	</head>
 	<body>
-		<button id="pause">Pause</button>
-		<button id="restart">Restart</button>
-		<select id="label"></select>
+		<div style="display: flex; gap: 0.5rem">
+			<button id="pause">Pause</button>
+			<button id="restart">Restart</button>
+			<select id="label"></select>
+			<div>ID: <span id="id">Loading...</span></div>
+		</div>
 		<div id="title"></div>
 		<div id="members"></div>
 		<script src="/src/script.js" type="module"></script>

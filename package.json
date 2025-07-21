@@ -17,6 +17,7 @@
 		"vite": "^7.0.0"
 	},
 	"dependencies": {
-		"animejs": "^4.0.2"
+		"animejs": "^4.0.2",
+		"controly": "^1.2.0"
 	}
 }

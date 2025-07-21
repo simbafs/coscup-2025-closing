@@ -6,12 +6,15 @@ import { appendSlides } from './core/animation'
 import { createGroupSlides } from './components/Group'
 import { createSponsorSlides } from './components/Sponsor'
 import { setupControlPanel } from './components/ControlPanel'
+import { Display } from 'controly'
 
 // Import data
 import groupData from './data.json'
 import _sponsorData from './sponsor.json'
 
 const sponsorData: Partial<Record<string, Sponsor[]>> = _sponsorData
+
+const $ = document.querySelector.bind(document)
 
 /**
  * Main function to initialize the application.
@@ -20,8 +23,8 @@ async function main() {
 	// --- 1. Setup and Guards ---
 	engine.pauseOnDocumentHidden = false
 
-	const titleContainer = document.querySelector('#title')
-	const membersContainer = document.querySelector('#members')
+	const titleContainer = $('#title')
+	const membersContainer = $('#members')
 
 	if (!titleContainer || !membersContainer) {
 		console.error('Required DOM containers #title or #members not found. Aborting.')
@@ -72,7 +75,40 @@ async function main() {
 		})),
 	]
 
-	setupControlPanel(tl, labels)
+	const cmd = setupControlPanel(tl, labels)
+
+	if (!cmd) {
+		const $id = $('#id')
+		if ($id) $id.innerHTML = `無法載入控制面板`
+	} else {
+		const param = new URLSearchParams(window.location.search)
+		const id = param.get('id') || undefined
+		console.log('id', id)
+		const display = new Display({
+			serverUrl: 'wss://controly.1li.tw/ws',
+			commandUrl: `${window.location.origin}${window.location.pathname}/command.json`,
+			id,
+		})
+
+		display.on('open', id => {
+			const $id = $('#id')
+			if ($id) {
+				$id.textContent = id
+			}
+		})
+
+		display.command('pause', cmd.pause)
+		display.command('restart', cmd.restart)
+		display.command('jump', cmd.jump)
+
+		cmd.onLabelChange(label => {
+			display.updateStatus({
+				current: label,
+			})
+		})
+
+		display.connect()
+	}
 }
 
 // Run the application
