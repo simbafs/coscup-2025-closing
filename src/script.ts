@@ -9,7 +9,7 @@ import { setupControlPanel } from './components/ControlPanel'
 import { Display } from 'controly'
 
 // Import data
-import groupData from './data.json'
+import groupData from './member.json'
 import _sponsorData from './sponsor.json'
 
 const sponsorData: Partial<Record<string, Sponsor[]>> = _sponsorData

@@ -1,4 +1,4 @@
-import groups from '../src/data.json' with { type: 'json' }
+import groups from '../src/member.json' with { type: 'json' }
 import { sponsorLevels_mapping, sponsorLevels } from '../src/core/constants.ts'
 
 const cmdOptions = [

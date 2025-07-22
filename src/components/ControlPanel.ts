@@ -68,7 +68,6 @@ export function setupControlPanel(tl: Timeline, labels: Label[]) {
 		const currentLabel = getCurrent(tl.iterationCurrentTime)
 		if (currentLabel !== labelSelect.value) {
 			labelSelect.value = currentLabel
-			console.log(onLabelChange)
 			if (onLabelChange) {
 				onLabelChange(currentLabel)
 			}
