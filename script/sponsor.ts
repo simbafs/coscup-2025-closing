@@ -1,4 +1,5 @@
 // some code copy from https://github.com/COSCUP/2025/blob/main/loaders/sponsor.data.ts
+// LICENSE: MIT
 
 import fs from 'fs/promises'
 import { parse } from 'csv-parse/sync'

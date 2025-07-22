@@ -11,6 +11,8 @@ export const sponsorLevels = [
 	'special-thanks',
 ]
 
+// some code copy from https://github.com/COSCUP/2025/blob/main/loaders/sponsor.data.ts
+// LICENSE: MIT
 export const sponsorLevels_mapping: Record<string, string> = {
 	titanium: '鈦金級贊助',
 	gold: '黃金級贊助',
