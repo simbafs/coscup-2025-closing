@@ -1,31 +1,42 @@
-import { Timeline } from 'animejs'
 import type { Label } from '../types'
-import { getCurrentLabel } from '../core/utils'
+import { currentTL, pushNext } from '../core/animation'
 
 /**
  * Sets up the control panel UI (pause/restart buttons, timeline label dropdown).
  * @param tl The main timeline instance.
  * @param labels The array of labels for the dropdown.
  */
-export function setupControlPanel(tl: Timeline, labels: Label[]) {
+export function setupControlPanel(labels: Label[]) {
 	const pauseButton = document.querySelector('#pause')
 	const restartButton = document.querySelector('#restart')
 	const labelSelect = document.querySelector('#label') as HTMLSelectElement | null
 
 	if (!pauseButton || !restartButton || !labelSelect) {
 		console.warn('Control panel elements not found. UI controls will be disabled.')
-		return
-	}
-
-	const pause = () => {
-		if (tl.paused) {
-			tl.play()
-		} else {
-			tl.pause()
+		const noFunc = () => {}
+		return {
+			pause: noFunc,
+			restart: noFunc,
+			jump: noFunc,
+			onLabelChange: noFunc,
+			onBegin: noFunc,
 		}
 	}
 
-	const restart = () => tl.restart()
+	const pause = () => {
+		if (currentTL?.paused) {
+			currentTL?.play()
+		} else {
+			currentTL?.pause()
+		}
+	}
+
+	const restart = () => currentTL?.restart()
+
+	const jump = ({ value = '' } = {}) => {
+		console.log(`jump to ${value}`)
+		pushNext(value)
+	}
 
 	pauseButton.addEventListener('click', pause)
 	restartButton.addEventListener('click', restart)
@@ -43,49 +54,39 @@ export function setupControlPanel(tl: Timeline, labels: Label[]) {
 	})
 
 	// Populate the label dropdown
-	labels
-		.filter(l => l.value in tl.labels)
-		.forEach(l => {
-			const option = document.createElement('option')
-			option.value = l.value
-			option.textContent = l.name
-			labelSelect.appendChild(option)
-		})
+	labels.forEach(l => {
+		const option = document.createElement('option')
+		option.value = l.value
+		option.textContent = l.name
+		labelSelect.appendChild(option)
+	})
 
 	// Handle dropdown changes
 	labelSelect.addEventListener('change', e => {
 		const tid = (e.target as HTMLSelectElement).value
 		if (tid) {
-			tl.seek(tl.labels[tid])
+			jump({ value: tid })
 		}
 	})
 
-	let onLabelChange: (label: string) => void
+	let handleLabelChange: (label: string) => void
 
-	// Update dropdown based on timeline progress
-	const getCurrent = getCurrentLabel(tl)
-	tl.onUpdate = () => {
-		const currentLabel = getCurrent(tl.iterationCurrentTime)
-		if (currentLabel !== labelSelect.value) {
-			labelSelect.value = currentLabel
-			if (onLabelChange) {
-				onLabelChange(currentLabel)
-			}
-		}
+	const onLabelChange = (callback: (label: string) => void) => {
+		handleLabelChange = callback
+	}
+
+	const onBegin = (label: string) => {
+		// TODO:
+		console.log(`Timeline started at label: ${label}`)
+		labelSelect.value = label
+		handleLabelChange?.(label)
 	}
 
 	return {
 		pause,
 		restart,
-		jump: ({ value = '' } = {}) => {
-			if (value in tl.labels) {
-				tl.seek(tl.labels[value])
-			} else {
-				console.warn(`Label "${value}" not found in timeline.`)
-			}
-		},
-		onLabelChange: (callback: (label: string) => void) => {
-			onLabelChange = callback
-		},
+		jump,
+		onLabelChange,
+		onBegin,
 	}
 }

@@ -26,3 +26,8 @@ export type Label = {
 	name: string
 	value: string
 }
+
+export type Slide = {
+	title: HTMLHeadElement
+	slides: HTMLDivElement[]
+}

@@ -24,8 +24,8 @@ const cmd = [
 		type: 'button',
 	},
 	{
-		name: 'jump',
-		label: '跳轉',
+		name: 'next',
+		label: '下一個',
 		type: 'select',
 		options: cmdOptions,
 	},

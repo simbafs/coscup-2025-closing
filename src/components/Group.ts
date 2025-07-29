@@ -1,4 +1,4 @@
-import type { Group, MemberWithChief } from '../types'
+import type { Group, MemberWithChief, Slide } from '../types'
 import { chunk } from '../core/utils'
 import { createMemberElement } from './Member'
 
@@ -8,7 +8,7 @@ import { createMemberElement } from './Member'
  * @param membersPerSlide The number of members to show per slide.
  * @returns An object containing the title element and an array of slide elements.
  */
-export function createGroupSlides(group: Group, membersPerSlide: number) {
+export function createGroupSlides(group: Group, membersPerSlide: number): Slide {
 	const title = document.createElement('h1')
 	title.textContent = group.name
 

@@ -18,6 +18,6 @@
 	},
 	"dependencies": {
 		"animejs": "^4.0.2",
-		"controly": "^1.2.0"
+		"controly": "^1.4.0"
 	}
 }

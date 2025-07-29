@@ -1,8 +1,8 @@
-import { createTimeline, engine } from 'animejs'
+import { engine, Timeline } from 'animejs'
 import type { Label, Sponsor } from './types'
-import { sponsorLevels, sponsorLevels_mapping, ANIMATION_SPEED } from './core/constants'
+import { sponsorLevels, sponsorLevels_mapping } from './core/constants'
 import { getNumberInGroup } from './core/utils'
-import { appendSlides } from './core/animation'
+import { appendSlides, onNextChange } from './core/animation'
 import { createGroupSlides } from './components/Group'
 import { createSponsorSlides } from './components/Sponsor'
 import { setupControlPanel } from './components/ControlPanel'
@@ -15,6 +15,8 @@ import _sponsorData from './sponsor.json'
 const sponsorData: Partial<Record<string, Sponsor[]>> = _sponsorData
 
 const $ = document.querySelector.bind(document)
+
+const serverURL = import.meta.env.RPDO ? 'wss://controly.1li.tw/ws' : 'ws://localhost:8080/ws'
 
 /**
  * Main function to initialize the application.
@@ -31,39 +33,9 @@ async function main() {
 		return
 	}
 
-	const tl = createTimeline({
-		loop: true,
-	})
-
-	// Add an initial delay equal to one slide duration
-	const initialDelay = document.body.offsetWidth / ANIMATION_SPEED
-	tl.add({
-		duration: initialDelay,
-	})
-
 	// --- 2. Slide Generation and DOM Population ---
 	const membersPerSlide = getNumberInGroup()
 
-	// Process and append group slides
-	for (const group of groupData.data) {
-		const { title, slides } = createGroupSlides(group, membersPerSlide)
-		titleContainer.appendChild(title)
-		slides.forEach(slide => membersContainer.appendChild(slide))
-		appendSlides(tl, group.tid, title, slides)
-	}
-
-	// Process and append sponsor slides
-	for (const level of sponsorLevels) {
-		const result = createSponsorSlides(level, sponsorData[level] || [], membersPerSlide)
-		if (result) {
-			const { title, slides } = result
-			titleContainer.appendChild(title)
-			slides.forEach(slide => membersContainer.appendChild(slide))
-			appendSlides(tl, level, title, slides)
-		}
-	}
-
-	// --- 3. UI Controls ---
 	const labels: Label[] = [
 		...groupData.data.map(g => ({
 			name: g.name,
@@ -75,7 +47,46 @@ async function main() {
 		})),
 	]
 
-	const cmd = setupControlPanel(tl, labels)
+	const labelMap = Object.fromEntries(labels.map(l => [l.value, l.name]))
+
+	const allSlideLabels = labels.map(l => l.value)
+
+	let firstSlide: Timeline | null = null
+
+	// --- 3. UI Controls ---
+	const cmd = setupControlPanel(labels)
+
+	// Process and append group slides
+	for (const group of groupData.data) {
+		const s = createGroupSlides(group, membersPerSlide)
+		titleContainer.appendChild(s.title)
+		s.slides.forEach(slide => membersContainer.appendChild(slide))
+		const currentIndex = allSlideLabels.indexOf(group.tid)
+		const nextLabel = allSlideLabels[(currentIndex + 1) % allSlideLabels.length]
+		const tl = appendSlides(group.tid, nextLabel, s, cmd.onBegin)
+		if (!firstSlide) {
+			firstSlide = tl // Store the first slide timeline
+		}
+		tl.pause()
+	}
+
+	// Process and append sponsor slides
+	for (const level of sponsorLevels) {
+		if (!sponsorData[level] || sponsorData[level].length === 0) {
+			continue // Skip levels with no sponsors
+		}
+		const s = createSponsorSlides(level, sponsorData[level], membersPerSlide)
+		if (s) {
+			titleContainer.appendChild(s.title)
+			s.slides.forEach(slide => membersContainer.appendChild(slide))
+			const currentIndex = allSlideLabels.indexOf(level)
+			const nextLabel = allSlideLabels[(currentIndex + 1) % allSlideLabels.length]
+			const tl = appendSlides(level, nextLabel, s, cmd.onBegin)
+			tl.pause()
+		}
+	}
+
+	firstSlide?.play()
 
 	if (!cmd) {
 		const $id = $('#id')
@@ -85,7 +96,7 @@ async function main() {
 		const id = param.get('id') || undefined
 		console.log('id', id)
 		const display = new Display({
-			serverUrl: 'wss://controly.1li.tw/ws',
+			serverUrl: serverURL,
 			commandUrl: `${window.location.origin}${window.location.pathname}/command.json`,
 			id,
 		})
@@ -99,12 +110,21 @@ async function main() {
 
 		display.command('pause', cmd.pause)
 		display.command('restart', cmd.restart)
-		display.command('jump', cmd.jump)
+		display.command('next', cmd.jump)
+
+		const status = {
+			current: '',
+			next: '',
+		}
 
 		cmd.onLabelChange(label => {
-			display.updateStatus({
-				current: label,
-			})
+			status.current = labelMap[label] || label
+			display.updateStatus(status)
+		})
+
+		onNextChange(nextList => {
+			status.next = nextList.map(l => labelMap[l] || l).join('、')
+			display.updateStatus(status)
 		})
 
 		display.connect()

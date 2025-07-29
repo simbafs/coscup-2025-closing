@@ -1,4 +1,4 @@
-import type { Sponsor } from '../types'
+import type { Sponsor, Slide } from '../types'
 import { chunk } from '../core/utils'
 import { sponsorLevels_mapping } from '../core/constants'
 
@@ -9,11 +9,7 @@ import { sponsorLevels_mapping } from '../core/constants'
  * @param sponsorsPerSlide The number of sponsors to show per slide.
  * @returns An object containing the title element and an array of slide elements.
  */
-export function createSponsorSlides(level: string, sponsors: Sponsor[], sponsorsPerSlide: number) {
-	if (sponsors.length === 0) {
-		return null
-	}
-
+export function createSponsorSlides(level: string, sponsors: Sponsor[], sponsorsPerSlide: number): Slide {
 	const title = document.createElement('h1')
 	title.textContent = sponsorLevels_mapping[level] || level
 
