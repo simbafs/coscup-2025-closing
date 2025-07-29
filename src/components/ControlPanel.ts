@@ -1,29 +1,59 @@
 import type { Label } from '../types'
 import { currentTL, pushNext } from '../core/animation'
 
-/**
- * Sets up the control panel UI (pause/restart buttons, timeline label dropdown).
- * @param tl The main timeline instance.
- * @param labels The array of labels for the dropdown.
- */
-export function setupControlPanel(labels: Label[]) {
-	const pauseButton = document.querySelector('#pause')
-	const restartButton = document.querySelector('#restart')
-	const labelSelect = document.querySelector('#label') as HTMLSelectElement | null
+type Callback = (label: string) => void
 
-	if (!pauseButton || !restartButton || !labelSelect) {
-		console.warn('Control panel elements not found. UI controls will be disabled.')
-		const noFunc = () => {}
-		return {
-			pause: noFunc,
-			restart: noFunc,
-			jump: noFunc,
-			onLabelChange: noFunc,
-			onBegin: noFunc,
+class ControlPanelClass {
+	private pauseButton: HTMLElement
+	private restartButton: HTMLElement
+	private labelSelect: HTMLSelectElement
+	private handleLabelChange?: Callback
+
+	constructor(pauseButton: HTMLElement, restartButton: HTMLElement, labelSelect: HTMLSelectElement, labels: Label[]) {
+		this.pauseButton = pauseButton
+		this.restartButton = restartButton
+		this.labelSelect = labelSelect
+
+		this.setupEventListeners()
+		this.populateLabels(labels)
+	}
+
+	private setupEventListeners() {
+		this.pauseButton.addEventListener('click', this.pause)
+		this.restartButton.addEventListener('click', this.restart)
+		this.labelSelect.addEventListener('change', this.handleSelectChange)
+		document.addEventListener('keydown', this.handleKeyDown)
+	}
+
+	private populateLabels(labels: Label[]) {
+		labels.forEach(l => {
+			const option = document.createElement('option')
+			option.value = l.value
+			option.textContent = l.name
+			this.labelSelect.appendChild(option)
+		})
+	}
+
+	private handleSelectChange = (e: Event) => {
+		const tid = (e.target as HTMLSelectElement).value
+		if (tid) {
+			this.jump({ value: tid })
 		}
 	}
 
-	const pause = () => {
+	private handleKeyDown = (e: KeyboardEvent) => {
+		switch (e.code) {
+			case 'Space':
+				e.preventDefault()
+				this.pause()
+				break
+			case 'KeyR':
+				this.restart()
+				break
+		}
+	}
+
+	public pause = () => {
 		if (currentTL?.paused) {
 			currentTL?.play()
 		} else {
@@ -31,62 +61,45 @@ export function setupControlPanel(labels: Label[]) {
 		}
 	}
 
-	const restart = () => currentTL?.restart()
+	public restart = () => currentTL?.restart()
 
-	const jump = ({ value = '' } = {}) => {
+	public jump = ({ value = '' } = {}) => {
 		console.log(`jump to ${value}`)
 		pushNext(value)
 	}
 
-	pauseButton.addEventListener('click', pause)
-	restartButton.addEventListener('click', restart)
-
-	document.addEventListener('keydown', e => {
-		switch (e.code) {
-			case 'Space': // Note: e.code for space is 'Space'
-				e.preventDefault()
-				pause()
-				break
-			case 'KeyR':
-				restart()
-				break
-		}
-	})
-
-	// Populate the label dropdown
-	labels.forEach(l => {
-		const option = document.createElement('option')
-		option.value = l.value
-		option.textContent = l.name
-		labelSelect.appendChild(option)
-	})
-
-	// Handle dropdown changes
-	labelSelect.addEventListener('change', e => {
-		const tid = (e.target as HTMLSelectElement).value
-		if (tid) {
-			jump({ value: tid })
-		}
-	})
-
-	let handleLabelChange: (label: string) => void
-
-	const onLabelChange = (callback: (label: string) => void) => {
-		handleLabelChange = callback
+	public onLabelChange = (callback: Callback) => {
+		this.handleLabelChange = callback
 	}
 
-	const onBegin = (label: string) => {
-		// TODO:
+	public onBegin = (label: string) => {
 		console.log(`Timeline started at label: ${label}`)
-		labelSelect.value = label
-		handleLabelChange?.(label)
+		this.labelSelect.value = label
+		this.handleLabelChange?.(label)
+	}
+}
+
+const noOp = () => {}
+
+const dummyControlPanel = {
+	pause: noOp,
+	restart: noOp,
+	jump: noOp,
+	onLabelChange: noOp,
+	onBegin: noOp,
+}
+
+export type ControlPanel = ControlPanelClass | typeof dummyControlPanel
+
+export function setupControlPanel(labels: Label[]): ControlPanel {
+	const pauseButton = document.querySelector('#pause')
+	const restartButton = document.querySelector('#restart')
+	const labelSelect = document.querySelector('#label') as HTMLSelectElement | null
+
+	if (!pauseButton || !restartButton || !labelSelect) {
+		console.warn('Control panel elements not found. UI controls will be disabled.')
+		return dummyControlPanel
 	}
 
-	return {
-		pause,
-		restart,
-		jump,
-		onLabelChange,
-		onBegin,
-	}
+	return new ControlPanelClass(pauseButton as HTMLElement, restartButton as HTMLElement, labelSelect, labels)
 }

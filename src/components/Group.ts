@@ -1,6 +1,6 @@
 import type { Group, MemberWithChief, Slide } from '../types'
-import { chunk } from '../core/utils'
 import { createMemberElement } from './Member'
+import { createSlides } from './Slide'
 
 /**
  * Creates the title and slide elements for a group.
@@ -22,16 +22,9 @@ export function createGroupSlides(group: Group, membersPerSlide: number): Slide 
 		...group.members.filter(m => !chiefs.has(m.email_hash)).map(m => ({ member: m, isChief: false })),
 	]
 
-	const chunkedMembers = chunk(membersList, membersPerSlide || 1)
-
-	const slides = chunkedMembers.map(c => {
-		const slide = document.createElement('div')
-		slide.classList.add('slide')
-		c.forEach(({ member, isChief }) => {
-			slide.appendChild(createMemberElement(member, isChief))
-		})
-		return slide
-	})
+	const slides = createSlides(membersList, membersPerSlide, ({ member, isChief }) =>
+		createMemberElement(member, isChief),
+	)
 
 	return {
 		title,

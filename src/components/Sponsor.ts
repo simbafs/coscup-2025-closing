@@ -1,6 +1,28 @@
 import type { Sponsor, Slide } from '../types'
-import { chunk } from '../core/utils'
 import { sponsorLevels_mapping } from '../core/constants'
+import { createSlides } from './Slide'
+
+/**
+ * Creates a DOM element for a single sponsor.
+ * @param sponsor The sponsor object.
+ * @returns An HTMLDivElement representing the sponsor.
+ */
+export function createSponsorElement(sponsor: Sponsor): HTMLDivElement {
+	const sDiv = document.createElement('div')
+	sDiv.classList.add('sponsor')
+
+	const img = document.createElement('img')
+	img.src = sponsor.image
+	img.alt = sponsor.name
+
+	const name = document.createElement('h2')
+	name.textContent = sponsor.name
+
+	sDiv.appendChild(img)
+	sDiv.appendChild(name)
+
+	return sDiv
+}
 
 /**
  * Creates the title and slide elements for a sponsor level.
@@ -13,29 +35,7 @@ export function createSponsorSlides(level: string, sponsors: Sponsor[], sponsors
 	const title = document.createElement('h1')
 	title.textContent = sponsorLevels_mapping[level] || level
 
-	const slides = chunk(sponsors, sponsorsPerSlide).map(s => {
-		const slide = document.createElement('div')
-		slide.classList.add('slide')
-
-		s.forEach(sponsor => {
-			const sDiv = document.createElement('div')
-			sDiv.classList.add('sponsor')
-
-			const img = document.createElement('img')
-			img.src = sponsor.image
-			img.alt = sponsor.name
-
-			const name = document.createElement('h2')
-			name.textContent = sponsor.name
-
-			sDiv.appendChild(img)
-			sDiv.appendChild(name)
-
-			slide.appendChild(sDiv)
-		})
-
-		return slide
-	})
+	const slides = createSlides(sponsors, sponsorsPerSlide, createSponsorElement)
 
 	return {
 		title,
